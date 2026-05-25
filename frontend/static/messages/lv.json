@@ -3895,7 +3895,12 @@
         "eventsCount": "notikumi",
         "metricsCount": "metrikas",
         "durationFor": "uz",
-        "durationSec": "sek"
+        "durationSec": "sek",
+        "escalationSteps": "Eskalācijas soļi",
+        "escalationStepsDetectionPlaceholder": "0,75, 0,85, 0,90",
+        "escalationStepsMetricPlaceholder": "85, 90, 95",
+        "commonSpeciesExclusions": "Biežo sugu izņēmumi",
+        "commonSpeciesExclusionsPlaceholder": "Zinātniskie nosaukumi, atdalīti ar komatiem vai jaunām rindām"
       },
       "export": "Eksportēt",
       "import": "Importēt",
@@ -3941,7 +3946,11 @@
           "stream_url": "Straumes URL",
           "device_name": "Ierīces nosaukums",
           "error": "Kļūdas ziņojums",
-          "broker": "Brokeris"
+          "broker": "Brokeris",
+          "days_since_last_seen": "Dienas kopš pēdējās novērošanas",
+          "novelty_episode_days": "Jaunuma epizodes dienas",
+          "novelty_days_active": "Aktīvā jaunuma dienas",
+          "novelty_reason": "Jaunuma iemesls"
         },
         "operators": {
           "is": "ir",
@@ -3951,7 +3960,9 @@
           "greater_than": "lielāks par",
           "less_than": "mazāks par",
           "greater_or_equal": "lielāks vai vienāds",
-          "less_or_equal": "mazāks vai vienāds"
+          "less_or_equal": "mazāks vai vienāds",
+          "in": "ir sarakstā",
+          "not_in": "nav sarakstā"
         }
       },
       "v2Required": "Brīdinājumu noteikumiem nepieciešama atjaunināta datu bāzes shēma. Varat atjaunināt savu datu bāzi no",
@@ -3996,6 +4007,13 @@
         "birdWeatherFailed": {
           "name": "BirdWeather augšupielāde neizdevās",
           "description": "Paziņo, kad BirdWeather augšupielāde neizdodas"
+        }
+      },
+      "presets": {
+        "interestingBird": {
+          "button": "Interesants putns",
+          "name": "Interesanta putna ticamības pakāpieni",
+          "description": "Paziņo par sugām, kas atgriežas pēc nedēļas prombūtnes, un atkārto tikai tad, kad ticamība pārsniedz augstāku pakāpi."
         }
       }
     },

@@ -3886,6 +3886,11 @@
         "actionPush": "Push notification",
         "optionsSection": "Options",
         "cooldownSeconds": "Cooldown (seconds)",
+        "escalationSteps": "Escalation steps",
+        "escalationStepsDetectionPlaceholder": "0.75, 0.85, 0.90",
+        "escalationStepsMetricPlaceholder": "85, 90, 95",
+        "commonSpeciesExclusions": "Common species exclusions",
+        "commonSpeciesExclusionsPlaceholder": "Scientific names, separated by commas or new lines",
         "templateTitle": "Title Template",
         "templateTitlePlaceholder": "Leave empty for default",
         "templateMessage": "Message Template",
@@ -3901,6 +3906,13 @@
       "import": "Import",
       "exporting": "Exporting...",
       "importing": "Importing...",
+      "presets": {
+        "interestingBird": {
+          "button": "Interesting Bird",
+          "name": "Interesting bird confidence ladder",
+          "description": "Alerts for species returning after a week away, then repeats only when confidence crosses a higher step."
+        }
+      },
       "schema": {
         "objectTypes": {
           "stream": "Audio Stream",
@@ -3936,6 +3948,10 @@
           "species_name": "Species Name",
           "scientific_name": "Scientific Name",
           "confidence": "Confidence",
+          "days_since_last_seen": "Days Since Last Seen",
+          "novelty_episode_days": "Novelty Episode Days",
+          "novelty_days_active": "Novelty Days Active",
+          "novelty_reason": "Novelty Reason",
           "location": "Location",
           "stream_name": "Stream Name",
           "stream_url": "Stream URL",
@@ -3946,6 +3962,8 @@
         "operators": {
           "is": "is",
           "is_not": "is not",
+          "in": "is in list",
+          "not_in": "is not in list",
           "contains": "contains",
           "not_contains": "does not contain",
           "greater_than": "greater than",

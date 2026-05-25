@@ -3895,7 +3895,12 @@
         "eventsCount": "esemény",
         "metricsCount": "metrika",
         "durationFor": "ennyi ideig",
-        "durationSec": "mp"
+        "durationSec": "mp",
+        "escalationSteps": "Eszkalációs lépések",
+        "escalationStepsDetectionPlaceholder": "0,75, 0,85, 0,90",
+        "escalationStepsMetricPlaceholder": "85, 90, 95",
+        "commonSpeciesExclusions": "Gyakori fajok kizárása",
+        "commonSpeciesExclusionsPlaceholder": "Tudományos nevek vesszővel vagy új sorokkal elválasztva"
       },
       "export": "Exportálás",
       "import": "Importálás",
@@ -3941,7 +3946,11 @@
           "stream_url": "Adatfolyam URL",
           "device_name": "Eszköz neve",
           "error": "Hibaüzenet",
-          "broker": "Broker"
+          "broker": "Broker",
+          "days_since_last_seen": "Napok az utolsó észlelés óta",
+          "novelty_episode_days": "Újdonsági epizód napjai",
+          "novelty_days_active": "Aktív újdonsági napok",
+          "novelty_reason": "Újdonság oka"
         },
         "operators": {
           "is": "egyenlő",
@@ -3951,7 +3960,9 @@
           "greater_than": "nagyobb mint",
           "less_than": "kisebb mint",
           "greater_or_equal": "nagyobb vagy egyenlő",
-          "less_or_equal": "kisebb vagy egyenlő"
+          "less_or_equal": "kisebb vagy egyenlő",
+          "in": "szerepel a listában",
+          "not_in": "nem szerepel a listában"
         }
       },
       "v2Required": "A riasztási szabályokhoz a bővített adatbázis séma szükséges. Az adatbázist a Rendszer alatti Adatbázis oldalról migrálhatja.",
@@ -3996,6 +4007,13 @@
         "birdWeatherFailed": {
           "name": "BirdWeather feltöltés sikertelen",
           "description": "Értesít, amikor egy BirdWeather feltöltés sikertelen"
+        }
+      },
+      "presets": {
+        "interestingBird": {
+          "button": "Érdekes madár",
+          "name": "Érdekes madár bizalmi lépcsője",
+          "description": "Jelez azokra a fajokra, amelyek egy hét távollét után visszatérnek, majd csak magasabb bizalmi szint átlépésekor ismétel."
         }
       }
     },

@@ -3895,7 +3895,12 @@
         "eventsCount": "événements",
         "metricsCount": "métriques",
         "durationFor": "pendant",
-        "durationSec": "sec"
+        "durationSec": "sec",
+        "escalationSteps": "Paliers d’escalade",
+        "escalationStepsDetectionPlaceholder": "0,75, 0,85, 0,90",
+        "escalationStepsMetricPlaceholder": "85, 90, 95",
+        "commonSpeciesExclusions": "Exclusions des espèces communes",
+        "commonSpeciesExclusionsPlaceholder": "Noms scientifiques, séparés par des virgules ou des retours à la ligne"
       },
       "export": "Exporter",
       "import": "Importer",
@@ -3941,7 +3946,11 @@
           "stream_url": "URL du flux",
           "device_name": "Nom de l'appareil",
           "error": "Message d'erreur",
-          "broker": "Courtier"
+          "broker": "Courtier",
+          "days_since_last_seen": "Jours depuis la dernière observation",
+          "novelty_episode_days": "Jours de l’épisode de nouveauté",
+          "novelty_days_active": "Jours de nouveauté active",
+          "novelty_reason": "Raison de la nouveauté"
         },
         "operators": {
           "is": "est",
@@ -3951,7 +3960,9 @@
           "greater_than": "supérieur à",
           "less_than": "inférieur à",
           "greater_or_equal": "supérieur ou égal",
-          "less_or_equal": "inférieur ou égal"
+          "less_or_equal": "inférieur ou égal",
+          "in": "est dans la liste",
+          "not_in": "n’est pas dans la liste"
         }
       },
       "v2Required": "Les règles d'alerte nécessitent un schéma de base de données mis à jour. Vous pouvez mettre à jour votre base de données depuis la",
@@ -3996,6 +4007,13 @@
         "birdWeatherFailed": {
           "name": "Envoi BirdWeather échoué",
           "description": "Notifie lorsqu'un envoi BirdWeather échoue"
+        }
+      },
+      "presets": {
+        "interestingBird": {
+          "button": "Oiseau intéressant",
+          "name": "Paliers de confiance pour oiseau intéressant",
+          "description": "Alerte pour les espèces qui reviennent après une semaine d’absence, puis seulement quand la confiance franchit un palier supérieur."
         }
       }
     },

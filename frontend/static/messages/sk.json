@@ -3895,7 +3895,12 @@
         "eventsCount": "udalostí",
         "metricsCount": "metrík",
         "durationFor": "počas",
-        "durationSec": "sek"
+        "durationSec": "sek",
+        "escalationSteps": "Kroky eskalácie",
+        "escalationStepsDetectionPlaceholder": "0,75, 0,85, 0,90",
+        "escalationStepsMetricPlaceholder": "85, 90, 95",
+        "commonSpeciesExclusions": "Vylúčenia bežných druhov",
+        "commonSpeciesExclusionsPlaceholder": "Vedecké názvy oddelené čiarkami alebo novými riadkami"
       },
       "export": "Exportovať",
       "import": "Importovať",
@@ -3941,7 +3946,11 @@
           "stream_url": "URL streamu",
           "device_name": "Názov zariadenia",
           "error": "Chybová správa",
-          "broker": "Broker"
+          "broker": "Broker",
+          "days_since_last_seen": "Dni od posledného pozorovania",
+          "novelty_episode_days": "Dni epizódy novosti",
+          "novelty_days_active": "Dni aktívnej novosti",
+          "novelty_reason": "Dôvod novosti"
         },
         "operators": {
           "is": "je",
@@ -3951,7 +3960,9 @@
           "greater_than": "väčšie ako",
           "less_than": "menšie ako",
           "greater_or_equal": "väčšie alebo rovné",
-          "less_or_equal": "menšie alebo rovné"
+          "less_or_equal": "menšie alebo rovné",
+          "in": "je v zozname",
+          "not_in": "nie je v zozname"
         }
       },
       "v2Required": "Pravidlá upozornení vyžadujú aktualizovanú schému databázy. Databázu môžete aktualizovať na",
@@ -3996,6 +4007,13 @@
         "birdWeatherFailed": {
           "name": "Nahrávanie do BirdWeather zlyhalo",
           "description": "Upozorní, keď nahrávanie do BirdWeather zlyhá"
+        }
+      },
+      "presets": {
+        "interestingBird": {
+          "button": "Zaujímavý vták",
+          "name": "Rebrík istoty zaujímavého vtáka",
+          "description": "Upozorní na druhy, ktoré sa vrátia po týždni neprítomnosti, a potom opakuje iba pri prekročení vyššej istoty."
         }
       }
     },

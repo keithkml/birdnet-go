@@ -416,7 +416,7 @@
   let importing = $state(false);
 
   let editorOpen = $state(false);
-  let editingRule = $state<AlertRule | null>(null);
+  let editingRule = $state<Partial<AlertRule> | null>(null);
 
   // Computed stats for summary bar
   let activeCount = $derived(rules.filter(r => r.enabled).length);
@@ -1216,6 +1216,56 @@
       return;
     }
     editingRule = rule;
+    editorOpen = true;
+  }
+
+  function openInterestingBirdRule() {
+    if (!schema) {
+      showRuleStatus(t('settings.alerts.errors.schemaLoadFailed'), 'error');
+      return;
+    }
+    editingRule = {
+      name: t('settings.alerts.presets.interestingBird.name'),
+      description: t('settings.alerts.presets.interestingBird.description'),
+      enabled: true,
+      built_in: false,
+      object_type: 'detection',
+      trigger_type: 'event',
+      event_name: 'detection.occurred',
+      metric_name: '',
+      cooldown_sec: 86400,
+      escalation_steps: [0.75, 0.85, 0.9],
+      conditions: [
+        {
+          id: 0,
+          rule_id: 0,
+          property: 'confidence',
+          operator: 'greater_or_equal',
+          value: '0.75',
+          duration_sec: 0,
+          sort_order: 0,
+        },
+        {
+          id: 0,
+          rule_id: 0,
+          property: 'novelty_episode_days',
+          operator: 'greater_or_equal',
+          value: '7',
+          duration_sec: 0,
+          sort_order: 1,
+        },
+      ],
+      actions: [
+        {
+          id: 0,
+          rule_id: 0,
+          target: 'bell',
+          template_title: '',
+          template_message: '',
+          sort_order: 0,
+        },
+      ],
+    };
     editorOpen = true;
   }
 
@@ -2376,10 +2426,14 @@
     {#if !editorOpen}
       <SettingsButton
         className="ml-auto"
-        variant="primary"
-        onclick={() => openEditor()}
+        variant="secondary"
+        onclick={openInterestingBirdRule}
         disabled={!v2Available}
       >
+        <Bird class="mr-1.5 size-4" />
+        {t('settings.alerts.presets.interestingBird.button')}
+      </SettingsButton>
+      <SettingsButton variant="primary" onclick={() => openEditor()} disabled={!v2Available}>
         <Plus class="mr-1.5 size-4" />
         {t('settings.alerts.newRule')}
       </SettingsButton>

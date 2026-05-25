@@ -46,7 +46,7 @@
   import { translateField } from '$lib/utils/notifications';
 
   interface Props {
-    rule: AlertRule | null;
+    rule: Partial<AlertRule> | null;
     schema: AlertSchema;
     onSave: (_data: Partial<AlertRule>) => void;
     onClose: () => void;
@@ -64,6 +64,7 @@
   let eventName = $state('');
   let metricName = $state('');
   let cooldownSec = $state(300);
+  let escalationStepsText = $state('');
   interface EditorCondition {
     id: string;
     property: string;
@@ -82,6 +83,7 @@
 
   let conditions = $state<EditorCondition[]>([]);
   let actions = $state<EditorAction[]>([]);
+  let isExistingRule = $derived(rule?.id != null);
 
   // Dropdown state
   let objDropOpen = $state(false);
@@ -90,14 +92,15 @@
   // Initialize form state from rule prop
   $effect(() => {
     if (rule) {
-      name = translateField(rule.name_key, undefined, rule.name);
-      description = translateField(rule.description_key, undefined, rule.description);
-      enabled = rule.enabled;
-      objectType = rule.object_type;
+      name = translateField(rule.name_key, undefined, rule.name ?? '');
+      description = translateField(rule.description_key, undefined, rule.description ?? '');
+      enabled = rule.enabled ?? true;
+      objectType = rule.object_type ?? '';
       triggerType = (rule.trigger_type as 'event' | 'metric') || 'event';
-      eventName = rule.event_name;
-      metricName = rule.metric_name;
-      cooldownSec = rule.cooldown_sec;
+      eventName = rule.event_name ?? '';
+      metricName = rule.metric_name ?? '';
+      cooldownSec = rule.cooldown_sec ?? 300;
+      escalationStepsText = rule.escalation_steps?.join(', ') ?? '';
       conditions =
         rule.conditions?.map(c => ({
           id: newConditionId(),
@@ -124,6 +127,7 @@
       eventName = '';
       metricName = '';
       cooldownSec = 300;
+      escalationStepsText = '';
       conditions = [];
       actions = [{ target: 'bell', template_title: '', template_message: '' }];
     }
@@ -172,6 +176,21 @@
   let propertyOptions = $derived(
     availableProperties.map(p => ({ value: p.name, label: schemaPropertyLabel(p.name, p.label) }))
   );
+
+  let supportsEscalationSteps = $derived(
+    triggerType === 'metric' || (objectType === 'detection' && triggerType === 'event')
+  );
+
+  let isDetectionOccurredRule = $derived(
+    objectType === 'detection' && triggerType === 'event' && eventName === 'detection.occurred'
+  );
+
+  let commonSpeciesExclusions = $derived.by(() => {
+    const condition = conditions.find(
+      c => c.property === 'scientific_name' && c.operator === 'not_in'
+    );
+    return condition?.value ?? '';
+  });
 
   // Get operators for a given property
   function operatorsForProperty(propName: string) {
@@ -246,6 +265,54 @@
     conditions = conditions.filter((_, i) => i !== index);
   }
 
+  function setCommonSpeciesExclusions(value: string) {
+    const existingCondition = conditions.find(
+      c => c.property === 'scientific_name' && c.operator === 'not_in'
+    );
+    const trimmed = value.trim();
+
+    if (trimmed === '') {
+      if (existingCondition) {
+        conditions = conditions.filter(condition => condition.id !== existingCondition.id);
+      }
+      return;
+    }
+
+    const exclusionCondition: EditorCondition = {
+      id: existingCondition?.id ?? newConditionId(),
+      property: 'scientific_name',
+      operator: 'not_in',
+      value,
+      duration_sec: 0,
+    };
+
+    if (existingCondition) {
+      conditions = conditions.map(condition =>
+        condition.id === existingCondition.id ? exclusionCondition : condition
+      );
+    } else {
+      conditions = [...conditions, exclusionCondition];
+    }
+  }
+
+  function parseEscalationSteps(value: string): number[] | null {
+    if (!supportsEscalationSteps || value.trim() === '') {
+      return [];
+    }
+    const tokens = value
+      .split(/[\s,;]+/)
+      .map(token => token.trim())
+      .filter(Boolean);
+    const steps = tokens.map(token => Number(token));
+    if (steps.some(step => !Number.isFinite(step) || step < 0)) {
+      return null;
+    }
+    return steps;
+  }
+
+  let parsedEscalationSteps = $derived.by(() => parseEscalationSteps(escalationStepsText));
+  let escalationStepsValid = $derived(parsedEscalationSteps !== null);
+
   // Action management
   function toggleAction(target: string) {
     const exists = actions.some(a => a.target === target);
@@ -267,6 +334,7 @@
       ((triggerType === 'event' && eventName !== '') ||
         (triggerType === 'metric' && metricName !== '')) &&
       actions.length > 0 &&
+      escalationStepsValid &&
       conditions.every(c => c.property !== '' && c.operator !== '')
   );
 
@@ -277,11 +345,11 @@
     // built-in rule's name/description; clear them otherwise so the
     // custom text takes precedence.
     const translatedOriginalName = rule?.name_key
-      ? translateField(rule.name_key, undefined, rule.name)
-      : rule?.name;
+      ? translateField(rule.name_key, undefined, rule.name ?? '')
+      : (rule?.name ?? '');
     const translatedOriginalDesc = rule?.description_key
-      ? translateField(rule.description_key, undefined, rule.description)
-      : rule?.description;
+      ? translateField(rule.description_key, undefined, rule.description ?? '')
+      : (rule?.description ?? '');
     const nameKey = rule?.name_key && name.trim() === translatedOriginalName ? rule.name_key : '';
     const descKey =
       rule?.description_key && description.trim() === translatedOriginalDesc
@@ -300,6 +368,10 @@
       event_name: triggerType === 'event' ? eventName : '',
       metric_name: triggerType === 'metric' ? metricName : '',
       cooldown_sec: cooldownSec,
+      escalation_steps:
+        parsedEscalationSteps && parsedEscalationSteps.length > 0
+          ? parsedEscalationSteps
+          : undefined,
       conditions: conditions.map((c, i) => ({
         id: 0,
         rule_id: 0,
@@ -327,6 +399,7 @@
     eventName = '';
     metricName = '';
     conditions = [];
+    escalationStepsText = '';
     // Auto-select trigger type based on available triggers
     // Need to check against the new object type directly since derived hasn't updated yet
     const newOt = schema.objectTypes.find(ot => ot.name === newType);
@@ -341,6 +414,7 @@
     eventName = '';
     metricName = '';
     conditions = [];
+    escalationStepsText = '';
   }
 
   // Close dropdowns on click outside
@@ -373,7 +447,9 @@
   <!-- Header bar -->
   <div class="px-5 py-3 border-b border-[var(--color-base-300)] flex items-center justify-between">
     <h3 class="text-sm font-semibold text-[var(--color-base-content)]">
-      {rule ? t('settings.alerts.editor.editTitle') : t('settings.alerts.editor.createTitle')}
+      {isExistingRule
+        ? t('settings.alerts.editor.editTitle')
+        : t('settings.alerts.editor.createTitle')}
     </h3>
     <button
       class="w-7 h-7 rounded-md flex items-center justify-center hover:bg-[var(--color-base-200)] transition-colors cursor-pointer"
@@ -653,6 +729,24 @@
           </button>
         {/if}
       </div>
+      {#if isDetectionOccurredRule}
+        <div class="mb-2">
+          <label
+            for="common-species-exclusions"
+            class="block text-xs font-medium text-[var(--color-base-content)]/60 mb-1"
+          >
+            {t('settings.alerts.editor.commonSpeciesExclusions')}
+          </label>
+          <textarea
+            id="common-species-exclusions"
+            rows="2"
+            value={commonSpeciesExclusions}
+            placeholder={t('settings.alerts.editor.commonSpeciesExclusionsPlaceholder')}
+            class="w-full px-3 py-2 rounded-lg text-xs bg-[var(--color-base-200)] border border-[var(--color-base-300)] text-[var(--color-base-content)] placeholder:text-[var(--color-base-content)]/40 outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-colors resize-y"
+            oninput={e => setCommonSpeciesExclusions(e.currentTarget.value)}
+          ></textarea>
+        </div>
+      {/if}
       {#if conditions.length === 0}
         <div
           class="px-3 py-2.5 rounded-lg text-xs bg-[var(--color-base-200)] text-[var(--color-base-content)]/40"
@@ -801,6 +895,29 @@
       </div>
     </div>
 
+    {#if supportsEscalationSteps}
+      <div>
+        <label
+          for="rule-escalation-steps"
+          class="block text-xs font-medium text-[var(--color-base-content)]/60 mb-1"
+        >
+          {t('settings.alerts.editor.escalationSteps')}
+        </label>
+        <input
+          id="rule-escalation-steps"
+          type="text"
+          bind:value={escalationStepsText}
+          placeholder={triggerType === 'event'
+            ? t('settings.alerts.editor.escalationStepsDetectionPlaceholder')
+            : t('settings.alerts.editor.escalationStepsMetricPlaceholder')}
+          aria-invalid={!escalationStepsValid}
+          class="w-full px-3 py-2 rounded-lg text-sm bg-[var(--color-base-200)] border {escalationStepsValid
+            ? 'border-[var(--color-base-300)]'
+            : 'border-[var(--color-error)]'} text-[var(--color-base-content)] placeholder:text-[var(--color-base-content)]/40 outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-colors tabular-nums"
+        />
+      </div>
+    {/if}
+
     <!-- Action template fields (shown below when actions are selected) -->
     {#each ['bell', 'push'] as target (target)}
       {#if isActionSelected(target)}
@@ -847,11 +964,11 @@
     <!-- Row 6: Footer - Delete (left) + Cancel/Save (right) -->
     <div class="flex items-center justify-between pt-2">
       <div>
-        {#if rule && !rule.built_in && onDelete}
+        {#if isExistingRule && rule && !rule.built_in && onDelete}
           <button
             type="button"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors cursor-pointer"
-            onclick={() => onDelete?.(rule)}
+            onclick={() => onDelete?.(rule as AlertRule)}
           >
             <Trash2 class="w-3.5 h-3.5" />
             {t('settings.alerts.actionLabels.delete')}
@@ -872,7 +989,7 @@
           disabled={!isValid}
           class="px-4 py-1.5 rounded-lg text-xs font-medium bg-[var(--color-primary)] text-[var(--color-primary-content)] hover:opacity-90 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {rule ? t('common.buttons.save') : t('common.buttons.create')}
+          {isExistingRule ? t('common.buttons.save') : t('common.buttons.create')}
         </button>
       </div>
     </div>
