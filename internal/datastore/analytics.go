@@ -56,6 +56,7 @@ type NewSpeciesData struct {
 	ScientificName string `json:"scientific_name"`
 	CommonName     string `json:"common_name"`
 	FirstSeenDate  string `json:"first_seen_date"` // The absolute first date
+	LastSeenDate   string `json:"last_seen_date"`  // The most recent detection date
 	CountInPeriod  int    `json:"count_in_period"` // Optional: How many times seen in the query period
 }
 
@@ -627,6 +628,7 @@ func (ds *DataStore) GetNewSpeciesDetections(ctx context.Context, startDate, end
 		ScientificName     string
 		CommonName         string
 		FirstDetectionDate string // Scan directly into string
+		LastDetectionDate  string
 		CountInPeriod      int
 	}
 	var rawResults []RawNewSpeciesResult
@@ -655,7 +657,8 @@ func (ds *DataStore) GetNewSpeciesDetections(ctx context.Context, startDate, end
 	WITH SpeciesFirstSeen AS (
 	    SELECT
 	        notes.scientific_name,
-	        MIN(CASE WHEN notes.date != '' AND notes.date IS NOT NULL THEN notes.date ELSE NULL END) as first_detection_date
+	        MIN(CASE WHEN notes.date != '' AND notes.date IS NOT NULL THEN notes.date ELSE NULL END) as first_detection_date,
+	        MAX(CASE WHEN notes.date != '' AND notes.date IS NOT NULL THEN notes.date ELSE NULL END) as last_detection_date
 	    FROM notes
 	    LEFT JOIN note_reviews ON notes.id = note_reviews.note_id
 	    WHERE (note_reviews.verified IS NULL OR note_reviews.verified != '%s')
@@ -677,6 +680,7 @@ func (ds *DataStore) GetNewSpeciesDetections(ctx context.Context, startDate, end
 	    sfs.scientific_name,
 	    COALESCE(sip.common_name, sfs.scientific_name) as common_name,
 	    sfs.first_detection_date,
+	    sfs.last_detection_date,
 	    sip.count_in_period
 	FROM SpeciesFirstSeen sfs
 	JOIN SpeciesInPeriod sip ON sfs.scientific_name = sip.scientific_name
@@ -707,6 +711,7 @@ func (ds *DataStore) GetNewSpeciesDetections(ctx context.Context, startDate, end
 				ScientificName: raw.ScientificName,
 				CommonName:     raw.CommonName,
 				FirstSeenDate:  raw.FirstDetectionDate, // Assign only if valid
+				LastSeenDate:   raw.LastDetectionDate,
 				CountInPeriod:  raw.CountInPeriod,
 			})
 		} else {

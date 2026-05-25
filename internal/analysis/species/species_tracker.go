@@ -57,6 +57,10 @@ const (
 	defaultNotificationSuppressionWindow = 168 * time.Hour // Default suppression window (7 days)
 	notificationTypeNewSpecies           = "new_species"   // Notification type for new species alerts
 
+	// Novelty episode tracking
+	firstEverNoveltyEpisodeDays = 36500 // Treat first-ever detections as a very large absence (~100 years)
+	inactiveNoveltyValue        = -1    // Sentinel used when no novelty episode is active
+
 	// Cache management
 	maxStatusCacheSize           = 1000 // Maximum number of species to cache
 	targetCacheSize              = 800  // Target size after cleanup (80% of max)
@@ -106,6 +110,19 @@ type SpeciesStatus struct {
 	DaysThisSeason  int  // Days since first this season
 }
 
+// NoveltyStatus describes the current absence-return episode for a species.
+// A novelty episode starts when a species is first detected, or when it returns
+// after at least one calendar day without detections. The episode remains active
+// for the same window used by new-species tracking.
+type NoveltyStatus struct {
+	DaysSinceLastSeen    int
+	NoveltyEpisodeDays   int
+	NoveltyEpisodeStart  time.Time
+	NoveltyDaysActive    int
+	NoveltyReason        string
+	NoveltyEpisodeActive bool
+}
+
 // cachedSpeciesStatus represents a cached species status result with timestamp
 type cachedSpeciesStatus struct {
 	status    SpeciesStatus
@@ -119,7 +136,11 @@ type SpeciesTracker struct {
 
 	// Lifetime tracking (existing)
 	speciesFirstSeen map[string]time.Time // scientificName -> first detection time
+	speciesLastSeen  map[string]time.Time // scientificName -> most recent detection time
 	windowDays       int                  // Days to consider a species "new"
+
+	// Novelty episode tracking
+	noveltyEpisodes map[string]NoveltyStatus // scientificName -> active novelty episode
 
 	// Multi-period tracking
 	speciesThisYear map[string]time.Time            // scientificName -> first detection this year
@@ -189,7 +210,11 @@ func NewTrackerFromSettings(ds SpeciesDatastore, settings *conf.SpeciesTrackingS
 	tracker := &SpeciesTracker{
 		// Lifetime tracking
 		speciesFirstSeen: make(map[string]time.Time, initialSpeciesCapacity),
+		speciesLastSeen:  make(map[string]time.Time, initialSpeciesCapacity),
 		windowDays:       settings.NewSpeciesWindowDays,
+
+		// Novelty episode tracking
+		noveltyEpisodes: make(map[string]NoveltyStatus, initialSpeciesCapacity),
 
 		// Multi-period tracking
 		speciesThisYear: make(map[string]time.Time, initialSpeciesCapacity),

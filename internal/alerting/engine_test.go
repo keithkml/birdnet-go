@@ -558,6 +558,101 @@ func TestEngine_EscalationSteps_FiresAtEachStep(t *testing.T) {
 	assert.Equal(t, []float64{86, 91, 96, 99.5}, fired, "top step should be suppressed")
 }
 
+func TestEngine_DetectionEscalationSteps_FiresAtHigherConfidence(t *testing.T) {
+	rule := entities.AlertRule{
+		ID:              1,
+		Enabled:         true,
+		ObjectType:      ObjectTypeDetection,
+		TriggerType:     TriggerTypeEvent,
+		EventName:       EventDetectionOccurred,
+		CooldownSec:     86400,
+		EscalationSteps: []float64{0.75, 0.85, 0.90},
+		Conditions: []entities.AlertCondition{
+			{Property: PropertyConfidence, Operator: OperatorGreaterOrEqual, Value: "0.75"},
+			{Property: PropertyNoveltyEpisodeDays, Operator: OperatorGreaterOrEqual, Value: "7"},
+		},
+	}
+
+	var fired []float64
+	repo := newMockRepo(rule)
+	engine := NewEngine(repo, func(_ *entities.AlertRule, event *AlertEvent) {
+		fired = append(fired, event.Properties[PropertyThresholdStep].(float64))
+	}, testLogger(), nil)
+	require.NoError(t, engine.RefreshRules(t.Context()))
+
+	emit := func(confidence float64) {
+		engine.HandleEvent(&AlertEvent{
+			ObjectType: ObjectTypeDetection,
+			EventName:  EventDetectionOccurred,
+			Properties: map[string]any{
+				PropertySpeciesName:         "Bay-breasted Warbler",
+				PropertyScientificName:      "Setophaga castanea",
+				PropertyConfidence:          confidence,
+				PropertyNoveltyEpisodeDays:  12,
+				PropertyNoveltyEpisodeStart: "2026-05-23T12:00:00Z",
+				PropertyDaysSinceLastSeen:   12,
+				PropertyNoveltyDaysActive:   0,
+				PropertyNoveltyReason:       "return_after_absence",
+			},
+			Timestamp: time.Now(),
+		})
+	}
+
+	emit(0.76)
+	assert.Equal(t, []float64{0.75}, fired)
+
+	emit(0.80)
+	assert.Equal(t, []float64{0.75}, fired, "same confidence step should be suppressed")
+
+	emit(0.86)
+	assert.Equal(t, []float64{0.75, 0.85}, fired)
+
+	emit(0.91)
+	assert.Equal(t, []float64{0.75, 0.85, 0.90}, fired)
+}
+
+func TestEngine_DetectionNoveltyCooldownIsSpeciesScoped(t *testing.T) {
+	rule := entities.AlertRule{
+		ID:          1,
+		Enabled:     true,
+		ObjectType:  ObjectTypeDetection,
+		TriggerType: TriggerTypeEvent,
+		EventName:   EventDetectionOccurred,
+		CooldownSec: 3600,
+		Conditions: []entities.AlertCondition{
+			{Property: PropertyNoveltyEpisodeDays, Operator: OperatorGreaterOrEqual, Value: "7"},
+		},
+	}
+
+	var fired []string
+	repo := newMockRepo(rule)
+	engine := NewEngine(repo, func(_ *entities.AlertRule, event *AlertEvent) {
+		fired = append(fired, event.Properties[PropertyScientificName].(string))
+	}, testLogger(), nil)
+	require.NoError(t, engine.RefreshRules(t.Context()))
+
+	emit := func(scientificName string) {
+		engine.HandleEvent(&AlertEvent{
+			ObjectType: ObjectTypeDetection,
+			EventName:  EventDetectionOccurred,
+			Properties: map[string]any{
+				PropertySpeciesName:         scientificName,
+				PropertyScientificName:      scientificName,
+				PropertyConfidence:          0.8,
+				PropertyNoveltyEpisodeDays:  9,
+				PropertyNoveltyEpisodeStart: "2026-05-23T12:00:00Z",
+			},
+			Timestamp: time.Now(),
+		})
+	}
+
+	emit("Setophaga castanea")
+	emit("Setophaga castanea")
+	emit("Bubo virginianus")
+
+	assert.Equal(t, []string{"Setophaga castanea", "Bubo virginianus"}, fired)
+}
+
 func TestEngine_EscalationSteps_ResetOnRecovery(t *testing.T) {
 	rule := entities.AlertRule{
 		ID:              1,

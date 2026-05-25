@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tphakala/birdnet-go/internal/analysis/species"
 	"github.com/tphakala/birdnet-go/internal/audiocore/convert"
 	"github.com/tphakala/birdnet-go/internal/audiocore/ffmpeg"
 	"github.com/tphakala/birdnet-go/internal/audiocore/resample"
@@ -87,10 +88,11 @@ func (a *DatabaseAction) ExecuteContext(ctx context.Context, _ any) error {
 	// Check if this is a new species and update atomically to prevent race conditions
 	var isNewSpecies bool
 	var daysSinceFirstSeen int
+	var novelty species.NoveltyStatus
 	if a.NewSpeciesTracker != nil {
 		// Use atomic check-and-update to prevent duplicate "new species" notifications
 		// when multiple detections of the same species arrive concurrently
-		isNewSpecies, daysSinceFirstSeen = a.NewSpeciesTracker.CheckAndUpdateSpecies(a.Result.Species.ScientificName, a.Result.BeginTime)
+		isNewSpecies, daysSinceFirstSeen, novelty = a.NewSpeciesTracker.CheckAndUpdateSpeciesWithNovelty(a.Result.Species.ScientificName, a.Result.BeginTime)
 	}
 
 	// Save detection to database using preferred path
@@ -168,7 +170,7 @@ func (a *DatabaseAction) ExecuteContext(ctx context.Context, _ any) error {
 	}
 
 	// After successful save, publish detection event to the event bus.
-	a.publishDetectionEvent(isNewSpecies, daysSinceFirstSeen)
+	a.publishDetectionEvent(isNewSpecies, daysSinceFirstSeen, novelty)
 
 	// NOTE: Audio export is intentionally NOT performed here.
 	// It runs as a separate action (SaveAudioAction) outside the CompositeAction
@@ -236,7 +238,7 @@ func (a *DatabaseAction) createDetectionEvent(isNewSpecies bool, daysSinceFirstS
 }
 
 // populateEventMetadata adds location, time, note ID, and image URL to event metadata.
-func (a *DatabaseAction) populateEventMetadata(detectionEvent events.DetectionEvent) {
+func (a *DatabaseAction) populateEventMetadata(detectionEvent events.DetectionEvent, novelty species.NoveltyStatus) {
 	metadata := detectionEvent.GetMetadata()
 	if metadata == nil {
 		GetLogger().Error("Detection event metadata is nil",
@@ -252,6 +254,13 @@ func (a *DatabaseAction) populateEventMetadata(detectionEvent events.DetectionEv
 	metadata["latitude"] = a.Result.Latitude
 	metadata["longitude"] = a.Result.Longitude
 	metadata["begin_time"] = a.Result.BeginTime
+	metadata["days_since_last_seen"] = novelty.DaysSinceLastSeen
+	metadata["novelty_episode_days"] = novelty.NoveltyEpisodeDays
+	metadata["novelty_days_active"] = novelty.NoveltyDaysActive
+	metadata["novelty_reason"] = novelty.NoveltyReason
+	if !novelty.NoveltyEpisodeStart.IsZero() {
+		metadata["novelty_episode_start"] = novelty.NoveltyEpisodeStart.Format(time.RFC3339)
+	}
 
 	if a.processor != nil && a.processor.BirdImageCache != nil {
 		if birdImage, err := a.processor.BirdImageCache.Get(a.Result.Species.ScientificName); err == nil && birdImage.URL != "" {
@@ -281,7 +290,7 @@ func (a *DatabaseAction) recordNotificationSent(notificationTime time.Time) {
 // publishDetectionEvent publishes a detection event to the event bus.
 // All detections are published so that alert rules on detection.occurred can fire.
 // New species detections additionally go through suppression and notification recording.
-func (a *DatabaseAction) publishDetectionEvent(isNewSpecies bool, daysSinceFirstSeen int) {
+func (a *DatabaseAction) publishDetectionEvent(isNewSpecies bool, daysSinceFirstSeen int, novelty species.NoveltyStatus) {
 	if !events.IsInitialized() {
 		return
 	}
@@ -296,7 +305,7 @@ func (a *DatabaseAction) publishDetectionEvent(isNewSpecies bool, daysSinceFirst
 		if !suppress {
 			detectionEvent := a.createDetectionEvent(true, daysSinceFirstSeen)
 			if detectionEvent != nil {
-				a.populateEventMetadata(detectionEvent)
+				a.populateEventMetadata(detectionEvent, novelty)
 				if published := eventBus.TryPublishDetection(detectionEvent); published {
 					a.recordNotificationSent(notificationTime)
 				}
@@ -312,7 +321,7 @@ func (a *DatabaseAction) publishDetectionEvent(isNewSpecies bool, daysSinceFirst
 		return
 	}
 
-	a.populateEventMetadata(detectionEvent)
+	a.populateEventMetadata(detectionEvent, novelty)
 	eventBus.TryPublishDetection(detectionEvent)
 }
 

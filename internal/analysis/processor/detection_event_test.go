@@ -173,7 +173,7 @@ func TestPublishDetectionEvent_OrdinaryDetection(t *testing.T) {
 		CorrelationID: "test-ordinary-det",
 	}
 
-	action.publishDetectionEvent(false, 30)
+	action.publishDetectionEvent(false, 30, species.NoveltyStatus{})
 
 	require.EventuallyWithT(t, func(collect *assert.CollectT) {
 		received := consumer.GetReceivedEvents()
@@ -198,7 +198,7 @@ func TestPublishDetectionEvent_NewSpecies(t *testing.T) {
 		CorrelationID: "test-new-species-det",
 	}
 
-	action.publishDetectionEvent(true, 0)
+	action.publishDetectionEvent(true, 0, species.NoveltyStatus{})
 
 	require.EventuallyWithT(t, func(collect *assert.CollectT) {
 		received := consumer.GetReceivedEvents()
@@ -244,7 +244,7 @@ func TestPublishDetectionEvent_SuppressedNewSpecies(t *testing.T) {
 		NewSpeciesTracker: tracker,
 	}
 
-	action.publishDetectionEvent(true, 0)
+	action.publishDetectionEvent(true, 0, species.NoveltyStatus{})
 
 	require.EventuallyWithT(t, func(collect *assert.CollectT) {
 		received := consumer.GetReceivedEvents()
@@ -271,7 +271,7 @@ func TestPublishDetectionEvent_NoEventBus(t *testing.T) {
 
 	// Should not panic when event bus is not initialized
 	assert.NotPanics(t, func() {
-		action.publishDetectionEvent(false, 10)
-		action.publishDetectionEvent(true, 0)
+		action.publishDetectionEvent(false, 10, species.NoveltyStatus{})
+		action.publishDetectionEvent(true, 0, species.NoveltyStatus{})
 	})
 }

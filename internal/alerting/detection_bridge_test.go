@@ -76,6 +76,28 @@ func TestBridge_OrdinaryDetection_EmitsOccurredOnly(t *testing.T) {
 	assert.False(t, result[0].Properties[PropertyIsNewSpecies].(bool))
 }
 
+func TestBridge_DetectionMetadataPromotedForConditions(t *testing.T) {
+	bridge, mu, captured := setupBridgeWithCapture(t)
+
+	event, err := events.NewDetectionEvent("Bay-breasted Warbler", "Setophaga castanea", 0.86, "mic", false, 30)
+	require.NoError(t, err)
+	event.GetMetadata()[PropertyDaysSinceLastSeen] = 12
+	event.GetMetadata()[PropertyNoveltyEpisodeDays] = 12
+	event.GetMetadata()[PropertyNoveltyEpisodeStart] = "2026-05-23T12:00:00Z"
+	event.GetMetadata()[PropertyNoveltyDaysActive] = 0
+	event.GetMetadata()[PropertyNoveltyReason] = "return_after_absence"
+
+	require.NoError(t, bridge.ProcessDetectionEvent(event))
+
+	result := waitForEvents(t, mu, captured, 1)
+	require.Len(t, result, 1)
+	assert.Equal(t, 12, result[0].Properties[PropertyDaysSinceLastSeen])
+	assert.Equal(t, 12, result[0].Properties[PropertyNoveltyEpisodeDays])
+	assert.Equal(t, "2026-05-23T12:00:00Z", result[0].Properties[PropertyNoveltyEpisodeStart])
+	assert.Equal(t, 0, result[0].Properties[PropertyNoveltyDaysActive])
+	assert.Equal(t, "return_after_absence", result[0].Properties[PropertyNoveltyReason])
+}
+
 func TestBridge_NewSpecies_EmitsBothEvents(t *testing.T) {
 	bridge, mu, captured := setupBridgeWithCapture(t)
 

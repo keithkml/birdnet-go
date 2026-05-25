@@ -50,6 +50,8 @@ const (
 const (
 	OperatorIs             = "is"
 	OperatorIsNot          = "is_not"
+	OperatorIn             = "in"
+	OperatorNotIn          = "not_in"
 	OperatorContains       = "contains"
 	OperatorNotContains    = "not_contains"
 	OperatorGreaterThan    = "greater_than"
@@ -76,10 +78,15 @@ const (
 	// Properties for detection event metadata passthrough.
 	// These are not used for condition evaluation but carry data
 	// needed by the notification adapter for webhook template enrichment.
-	PropertyEventMetadata      = "event_metadata"
-	PropertyEventTimestamp     = "event_timestamp"
-	PropertyDaysSinceFirstSeen = "days_since_first_seen"
-	PropertyIsNewSpecies       = "is_new_species"
+	PropertyEventMetadata       = "event_metadata"
+	PropertyEventTimestamp      = "event_timestamp"
+	PropertyDaysSinceFirstSeen  = "days_since_first_seen"
+	PropertyDaysSinceLastSeen   = "days_since_last_seen"
+	PropertyNoveltyEpisodeDays  = "novelty_episode_days"
+	PropertyNoveltyEpisodeStart = "novelty_episode_start"
+	PropertyNoveltyDaysActive   = "novelty_days_active"
+	PropertyNoveltyReason       = "novelty_reason"
+	PropertyIsNewSpecies        = "is_new_species"
 )
 
 // Action targets identify where notifications are sent.

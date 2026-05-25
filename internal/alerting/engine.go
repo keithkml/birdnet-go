@@ -7,6 +7,7 @@ import (
 	"maps"
 	"runtime/debug"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -110,6 +111,9 @@ func cooldownKey(rule *entities.AlertRule, event *AlertEvent) string {
 	if rule.TriggerType == TriggerTypeMetric {
 		return fmt.Sprintf("%d|%s", rule.ID, metricBufferKey(rule.MetricName, event.Properties))
 	}
+	if isSpeciesScopedDetectionRule(rule, event) {
+		return fmt.Sprintf("%d|%s", rule.ID, detectionSpeciesKey(event))
+	}
 	return fmt.Sprintf("%d", rule.ID)
 }
 
@@ -117,6 +121,57 @@ func cooldownKey(rule *entities.AlertRule, event *AlertEvent) string {
 // instance (path). Multiple mount points are tracked independently.
 func escalationKey(ruleID uint, metricName string, properties map[string]any) string {
 	return fmt.Sprintf("%d|%s", ruleID, metricBufferKey(metricName, properties))
+}
+
+func detectionSpeciesKey(event *AlertEvent) string {
+	for _, propertyName := range []string{PropertyScientificName, PropertySpeciesName} {
+		if value, ok := event.Properties[propertyName]; ok {
+			key := strings.TrimSpace(strings.ToLower(fmt.Sprintf("%v", value)))
+			if key != "" {
+				return key
+			}
+		}
+	}
+	return "unknown"
+}
+
+func isNoveltyProperty(property string) bool {
+	switch property {
+	case PropertyDaysSinceLastSeen, PropertyNoveltyEpisodeDays, PropertyNoveltyEpisodeStart, PropertyNoveltyDaysActive, PropertyNoveltyReason:
+		return true
+	default:
+		return false
+	}
+}
+
+func isSpeciesScopedDetectionRule(rule *entities.AlertRule, event *AlertEvent) bool {
+	if rule.TriggerType != TriggerTypeEvent || !isDetectionEvent(event.EventName) {
+		return false
+	}
+	if detectionSpeciesKey(event) == "unknown" {
+		return false
+	}
+	if len(rule.EscalationSteps) > 0 {
+		return true
+	}
+	for i := range rule.Conditions {
+		if isNoveltyProperty(rule.Conditions[i].Property) {
+			return true
+		}
+	}
+	return false
+}
+
+func detectionEscalationKey(rule *entities.AlertRule, event *AlertEvent) string {
+	episodeStart := strings.TrimSpace(fmt.Sprintf("%v", event.Properties[PropertyNoveltyEpisodeStart]))
+	if episodeStart == "" || episodeStart == "<nil>" {
+		eventTime := event.Timestamp
+		if eventTime.IsZero() {
+			eventTime = time.Now()
+		}
+		episodeStart = eventTime.Format(time.DateOnly)
+	}
+	return fmt.Sprintf("%d|%s|%s", rule.ID, detectionSpeciesKey(event), episodeStart)
 }
 
 // clearEscalationIfRecovered clears escalation state for rules whose metric
@@ -214,6 +269,53 @@ func (e *Engine) shouldSuppressEscalation(rule *entities.AlertRule, event *Alert
 	return false, propsCopy
 }
 
+// shouldSuppressDetectionEscalation applies confidence laddering to detection
+// event rules. It is keyed by species and novelty episode, so a higher
+// confidence step can notify again without waiting for the rule cooldown.
+func (e *Engine) shouldSuppressDetectionEscalation(rule *entities.AlertRule, event *AlertEvent) (suppress bool, props map[string]any) {
+	if len(rule.EscalationSteps) == 0 {
+		return false, event.Properties
+	}
+
+	confidence, ok := event.Properties[PropertyConfidence]
+	if !ok {
+		return false, event.Properties
+	}
+	confidenceFloat, err := toFloat64(confidence)
+	if err != nil {
+		return false, event.Properties
+	}
+
+	var currentStep float64
+	stepFound := false
+	for _, step := range rule.EscalationSteps {
+		if confidenceFloat >= step && (!stepFound || step > currentStep) {
+			currentStep = step
+			stepFound = true
+		}
+	}
+	if !stepFound {
+		return true, nil
+	}
+
+	key := detectionEscalationKey(rule, event)
+
+	e.escalationsMu.Lock()
+	lastStep, exists := e.escalations[key]
+	if exists && lastStep >= currentStep {
+		e.escalationsMu.Unlock()
+		return true, nil
+	}
+	e.escalations[key] = currentStep
+	e.escalationsMu.Unlock()
+
+	propsCopy := make(map[string]any, len(event.Properties)+1)
+	maps.Copy(propsCopy, event.Properties)
+	propsCopy[PropertyThresholdStep] = currentStep
+
+	return false, propsCopy
+}
+
 // HandleEvent evaluates an event against all enabled rules.
 func (e *Engine) HandleEvent(event *AlertEvent) {
 	// Record metric sample once before rule iteration to avoid duplicates
@@ -274,6 +376,28 @@ func (e *Engine) HandleEvent(event *AlertEvent) {
 				Properties: props,
 				Timestamp:  event.Timestamp,
 			}
+			e.fireRule(rule, augmentedEvent)
+			continue
+		}
+
+		if rule.TriggerType == TriggerTypeEvent && isDetection && len(rule.EscalationSteps) > 0 {
+			suppress, props := e.shouldSuppressDetectionEscalation(rule, event)
+			if suppress {
+				continue
+			}
+			augmentedEvent := &AlertEvent{
+				ObjectType: event.ObjectType,
+				EventName:  event.EventName,
+				MetricName: event.MetricName,
+				Properties: props,
+				Timestamp:  event.Timestamp,
+			}
+			e.log.Debug("Detection rule fired at confidence escalation step",
+				logger.String("component", "alerting.engine"),
+				logger.String("event_name", event.EventName),
+				logger.Uint64("rule_id", uint64(rule.ID)),
+				logger.String("rule_name", rule.Name),
+				logger.String("operation", "fire_detection_escalation_rule"))
 			e.fireRule(rule, augmentedEvent)
 			continue
 		}

@@ -7,6 +7,14 @@ import (
 	"github.com/tphakala/birdnet-go/internal/logger"
 )
 
+var detectionMetadataProperties = []string{
+	PropertyDaysSinceLastSeen,
+	PropertyNoveltyEpisodeDays,
+	PropertyNoveltyEpisodeStart,
+	PropertyNoveltyDaysActive,
+	PropertyNoveltyReason,
+}
+
 // DetectionAlertBridge bridges the events.EventBus detection events to the
 // alerting event bus. It registers as an events.EventConsumer and publishes
 // alert events for each detection.
@@ -59,6 +67,11 @@ func (b *DetectionAlertBridge) ProcessDetectionEvent(event events.DetectionEvent
 
 	if meta := event.GetMetadata(); len(meta) > 0 {
 		properties[PropertyEventMetadata] = maps.Clone(meta)
+		for _, propertyName := range detectionMetadataProperties {
+			if value, ok := meta[propertyName]; ok {
+				properties[propertyName] = value
+			}
+		}
 	}
 
 	var newSpeciesProps map[string]any
@@ -70,6 +83,7 @@ func (b *DetectionAlertBridge) ProcessDetectionEvent(event events.DetectionEvent
 		ObjectType: ObjectTypeDetection,
 		EventName:  EventDetectionOccurred,
 		Properties: properties,
+		Timestamp:  event.GetTimestamp(),
 	})
 
 	if newSpeciesProps != nil {
@@ -77,6 +91,7 @@ func (b *DetectionAlertBridge) ProcessDetectionEvent(event events.DetectionEvent
 			ObjectType: ObjectTypeDetection,
 			EventName:  EventDetectionNewSpecies,
 			Properties: newSpeciesProps,
+			Timestamp:  event.GetTimestamp(),
 		})
 	}
 

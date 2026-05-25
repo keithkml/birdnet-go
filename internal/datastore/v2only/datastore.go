@@ -2479,6 +2479,7 @@ type speciesFirstSeenInfo struct {
 	LabelID        uint
 	ScientificName string
 	FirstDetected  int64
+	LastDetected   int64
 }
 
 // convertToNewSpeciesData converts species first-seen data to NewSpeciesData with common name resolution.
@@ -2497,10 +2498,15 @@ func (ds *Datastore) convertToNewSpeciesData(_ context.Context, data []speciesFi
 		commonName := ds.resolveCommonName(sciName)
 
 		firstSeenDate := time.Unix(d.FirstDetected, 0).In(ds.timezone).Format(time.DateOnly)
+		var lastSeenDate string
+		if d.LastDetected > 0 {
+			lastSeenDate = time.Unix(d.LastDetected, 0).In(ds.timezone).Format(time.DateOnly)
+		}
 		result = append(result, datastore.NewSpeciesData{
 			ScientificName: sciName,
 			CommonName:     commonName,
 			FirstSeenDate:  firstSeenDate,
+			LastSeenDate:   lastSeenDate,
 			CountInPeriod:  0,
 		})
 	}
@@ -2526,6 +2532,7 @@ func (ds *Datastore) GetNewSpeciesDetections(ctx context.Context, startDate, end
 			LabelID:        d.LabelID,
 			ScientificName: d.ScientificName,
 			FirstDetected:  d.FirstDetected,
+			LastDetected:   d.LastDetected,
 		}
 	}
 

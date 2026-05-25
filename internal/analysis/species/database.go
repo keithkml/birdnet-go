@@ -116,6 +116,7 @@ func (t *SpeciesTracker) loadLifetimeDataFromDatabase(now time.Time) error {
 	case len(newSpeciesData) > 0:
 		// Clear and populate lifetime tracking map with new data
 		t.speciesFirstSeen = make(map[string]time.Time, len(newSpeciesData))
+		t.speciesLastSeen = make(map[string]time.Time, len(newSpeciesData))
 		for _, species := range newSpeciesData {
 			if species.FirstSeenDate != "" {
 				firstSeen, err := time.Parse(time.DateOnly, species.FirstSeenDate)
@@ -127,6 +128,18 @@ func (t *SpeciesTracker) loadLifetimeDataFromDatabase(now time.Time) error {
 					continue
 				}
 				t.speciesFirstSeen[species.ScientificName] = firstSeen
+				t.speciesLastSeen[species.ScientificName] = firstSeen
+			}
+			if species.LastSeenDate != "" {
+				lastSeen, err := time.Parse(time.DateOnly, species.LastSeenDate)
+				if err != nil {
+					getLog().Debug("Failed to parse last seen date",
+						logger.String("species", species.ScientificName),
+						logger.String("date", species.LastSeenDate),
+						logger.Error(err))
+					continue
+				}
+				t.speciesLastSeen[species.ScientificName] = lastSeen
 			}
 		}
 		getLog().Debug("Loaded species data from database",
@@ -134,6 +147,7 @@ func (t *SpeciesTracker) loadLifetimeDataFromDatabase(now time.Time) error {
 	case len(t.speciesFirstSeen) == 0:
 		// No data from database and no existing data - initialize empty map
 		t.speciesFirstSeen = make(map[string]time.Time, initialSpeciesCapacity)
+		t.speciesLastSeen = make(map[string]time.Time, initialSpeciesCapacity)
 		getLog().Debug("No species data from database, initialized empty tracking")
 	default:
 		// Database returned empty data but we have existing data - keep it
