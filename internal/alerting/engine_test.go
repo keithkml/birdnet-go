@@ -605,6 +605,7 @@ func TestEngine_DetectionEscalationSteps_FiresAtHigherConfidence(t *testing.T) {
 				PropertyNoveltyEpisodeDays:  noveltyEpisodeDays,
 				PropertyNoveltyEpisodeStart: noveltyEpisodeStart,
 				PropertyDaysSinceLastSeen:   noveltyEpisodeDays,
+				PropertyNoveltyReason:       "return_after_absence",
 			},
 			Timestamp: time.Now(),
 		})

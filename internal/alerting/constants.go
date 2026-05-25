@@ -85,6 +85,7 @@ const (
 	PropertyDaysSinceLastSeen   = events.DetectionMetadataDaysSinceLastSeen
 	PropertyNoveltyEpisodeDays  = events.DetectionMetadataNoveltyEpisodeDays
 	PropertyNoveltyEpisodeStart = events.DetectionMetadataNoveltyEpisodeStart
+	PropertyNoveltyReason       = events.DetectionMetadataNoveltyReason
 	PropertyIsNewSpecies        = "is_new_species"
 )
 

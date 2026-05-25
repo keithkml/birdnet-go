@@ -144,6 +144,7 @@ func detectionProperties() []PropertySchema {
 		{Name: PropertyConfidence, Label: "Confidence", Type: "number", Operators: numericOperators},
 		{Name: PropertyDaysSinceLastSeen, Label: "Days Since Last Seen", Type: "number", Operators: numericOperators},
 		{Name: PropertyNoveltyEpisodeDays, Label: "Novelty Episode Days", Type: "number", Operators: numericOperators},
+		{Name: PropertyNoveltyReason, Label: "Novelty Reason", Type: "string", Operators: stringOperators},
 		{Name: PropertyLocation, Label: "Location", Type: "string", Operators: stringOperators},
 	}
 }

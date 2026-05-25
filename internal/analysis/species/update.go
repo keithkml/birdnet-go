@@ -76,6 +76,7 @@ func (t *SpeciesTracker) calculateNoveltyStatusLocked(scientificName string, det
 			DaysSinceLastSeen:    inactiveNoveltyValue,
 			NoveltyEpisodeDays:   firstEverNoveltyEpisodeDays,
 			NoveltyEpisodeStart:  detectionTime,
+			NoveltyReason:        noveltyReasonFirstEver,
 			NoveltyEpisodeActive: true,
 		}
 	case daysSinceLastSeen > 0:
@@ -83,6 +84,7 @@ func (t *SpeciesTracker) calculateNoveltyStatusLocked(scientificName string, det
 			DaysSinceLastSeen:    daysSinceLastSeen,
 			NoveltyEpisodeDays:   daysSinceLastSeen,
 			NoveltyEpisodeStart:  detectionTime,
+			NoveltyReason:        noveltyReasonReturn,
 			NoveltyEpisodeActive: true,
 		}
 	default:
