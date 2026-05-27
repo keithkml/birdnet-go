@@ -2992,6 +2992,7 @@
         "unknown": "inconnu",
         "refresh": "Actualiser",
         "addStream": "Ajouter un Flux",
+        "testRequired": "Effectuez un test de flux réussi avant d'enregistrer",
         "deleteConfirm": "Supprimer ce flux ?",
         "restartCount": "Redémarré {count} fois",
         "healthLoadError": "Échec du chargement de l'état du flux",
@@ -3045,10 +3046,10 @@
           "failed": "Échouée",
           "unknown": "Inconnue"
         },
-        "probe": {
+        "test": {
           "button": "Tester le flux",
           "probing": "Test en cours...",
-          "result": "Résultat du sondage",
+          "result": "Résultat du test",
           "error": "Test échoué",
           "batCompatible": "Compatible chauves-souris",
           "batIncompatible": "Non compatible chauves-souris"
@@ -3936,6 +3937,8 @@
           "species_name": "Nom de l'espèce",
           "scientific_name": "Nom scientifique",
           "confidence": "Confiance",
+          "days_since_last_seen": "Jours depuis la dernière détection",
+          "novelty_episode_days": "Jours de l'épisode de nouveauté",
           "location": "Emplacement",
           "stream_name": "Nom du flux",
           "stream_url": "URL du flux",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Paramètre host invalide",
       "rateLimit": "Trop de tentatives de connexion au flux de notifications, veuillez patienter avant de réessayer"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Corps de requête invalide",
+        "urlRequired": "L'URL du flux est requise",
+        "invalidUrl": "Format d'URL invalide. Saisissez une URL complète, par ex. rtsp://hôte:port/chemin",
+        "unsupportedScheme": "Schéma d'URL non pris en charge \"{scheme}\". Utilisez rtsp, rtsps, http, https, rtmp ou udp",
+        "blockedDestination": "Cette destination est bloquée pour des raisons de sécurité",
+        "connectionFailed": "Impossible de se connecter au flux. Vérifiez que l'URL est correcte et que le flux est accessible"
+      }
+    },
     "debug": {
       "notEnabled": "Le mode débogage n'est pas activé"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Actualiser",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "Tout va bien",
+      "needsAttention": "Attention requise",
+      "failing": "En échec",
+      "allClear": "RAS",
+      "noData": "Aucune donnée",
+      "none": "Aucun"
+    },
+    "diagnostics": "Diagnostic",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Composant",
       "errorLevel": "Niveau",
       "errorMessage": "Message"
+    },
+    "window": {
+      "label": "Fenêtre d'évaluation",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Dernier événement",
+      "recentEvents": "Événements récents",
+      "time": "Heure",
+      "source": "Source",
+      "count": "Nombre",
+      "lifetime": "total",
+      "sparklineLabel": "Graphique d'activité"
     }
   }
 }

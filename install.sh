@@ -1831,7 +1831,22 @@ migrate_installation() {
         return 1
     fi
 
-    # Step 5: Clean up old systemd service and related files (new one will be created during install)
+    # Step 5: Preserve timezone and clean up old systemd service
+    if [ -z "$CONFIGURED_TZ" ]; then
+        local tz_service_file=""
+        if [ -f "/etc/systemd/system/birdnet-go.service" ]; then
+            tz_service_file="/etc/systemd/system/birdnet-go.service"
+        elif [ -f "/lib/systemd/system/birdnet-go.service" ]; then
+            tz_service_file="/lib/systemd/system/birdnet-go.service"
+        fi
+        if [ -n "$tz_service_file" ]; then
+            CONFIGURED_TZ=$(sed -n 's/.*--env TZ="\([^"]*\)".*/\1/p' "$tz_service_file" 2>/dev/null | head -1)
+            if [ -n "$CONFIGURED_TZ" ]; then
+                log_message "INFO" "Preserved timezone from old service: $CONFIGURED_TZ"
+                print_message "📍 Preserved existing timezone configuration: $CONFIGURED_TZ" "$GREEN"
+            fi
+        fi
+    fi
     sudo systemctl disable --now birdnet-go.service 2>/dev/null || true
     sudo rm -f /etc/systemd/system/birdnet-go.service
     sudo rm -f /etc/systemd/system/multi-user.target.wants/birdnet-go.service
@@ -1869,12 +1884,30 @@ check_existing_installation_owner() {
     _check_install_home() {
         local install_home="$1"
         if [ -n "$install_home" ] && [ "$install_home" != "$HOME" ]; then
-            found_other_install=true
-            other_path="${install_home}/birdnet-go-app"
+            local candidate_path="${install_home}/birdnet-go-app"
+            # Verify the detected path actually exists on disk before flagging.
+            # Stale systemd service files or Docker container metadata can
+            # reference paths that no longer (or never) existed, causing
+            # false-positive migration prompts (see issue #3273).
+            local path_exists=false
             if [ "$install_home" = "/root" ]; then
-                other_user="root"
+                # /root is typically mode 700; use non-interactive sudo
+                if sudo -n test -d "$candidate_path" 2>/dev/null; then
+                    path_exists=true
+                fi
             else
-                other_user=$(basename "$install_home")
+                if [ -d "$candidate_path" ]; then
+                    path_exists=true
+                fi
+            fi
+            if [ "$path_exists" = true ]; then
+                found_other_install=true
+                other_path="$candidate_path"
+                if [ "$install_home" = "/root" ]; then
+                    other_user="root"
+                else
+                    other_user=$(basename "$install_home")
+                fi
             fi
         fi
     }
@@ -4515,12 +4548,20 @@ handle_container_update() {
     print_message "🔄 Checking for updates..." "$YELLOW"
     
     # Extract existing timezone from systemd service file if updating
-    if [ -f "/etc/systemd/system/birdnet-go.service" ] && [ -z "$CONFIGURED_TZ" ]; then
-        local existing_tz=$(grep -oP '(?<=--env TZ=")[^"]+' /etc/systemd/system/birdnet-go.service 2>/dev/null)
-        if [ -n "$existing_tz" ]; then
-            CONFIGURED_TZ="$existing_tz"
-            log_message "INFO" "Extracted existing timezone from service: $CONFIGURED_TZ"
-            print_message "📍 Using existing timezone configuration: $CONFIGURED_TZ" "$GREEN"
+    if [ -z "$CONFIGURED_TZ" ]; then
+        local tz_service_file=""
+        if [ -f "/etc/systemd/system/birdnet-go.service" ]; then
+            tz_service_file="/etc/systemd/system/birdnet-go.service"
+        elif [ -f "/lib/systemd/system/birdnet-go.service" ]; then
+            tz_service_file="/lib/systemd/system/birdnet-go.service"
+        fi
+        if [ -n "$tz_service_file" ]; then
+            local existing_tz=$(sed -n 's/.*--env TZ="\([^"]*\)".*/\1/p' "$tz_service_file" 2>/dev/null | head -1)
+            if [ -n "$existing_tz" ]; then
+                CONFIGURED_TZ="$existing_tz"
+                log_message "INFO" "Extracted existing timezone from service: $CONFIGURED_TZ"
+                print_message "📍 Using existing timezone configuration: $CONFIGURED_TZ" "$GREEN"
+            fi
         fi
     fi
     

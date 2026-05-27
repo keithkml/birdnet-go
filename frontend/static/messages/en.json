@@ -2992,6 +2992,7 @@
         "unknown": "unknown",
         "refresh": "Refresh",
         "addStream": "Add Stream",
+        "testRequired": "Run a successful stream test before saving",
         "deleteConfirm": "Remove this stream?",
         "restartCount": "Restarted {count} time(s)",
         "healthLoadError": "Failed to load stream health status",
@@ -3045,10 +3046,10 @@
           "failed": "Failed",
           "unknown": "Unknown"
         },
-        "probe": {
+        "test": {
           "button": "Test Stream",
           "probing": "Testing...",
-          "result": "Probe Result",
+          "result": "Test Result",
           "error": "Test failed",
           "batCompatible": "Bat compatible",
           "batIncompatible": "Not bat compatible"
@@ -3936,6 +3937,8 @@
           "species_name": "Species Name",
           "scientific_name": "Scientific Name",
           "confidence": "Confidence",
+          "days_since_last_seen": "Days Since Last Seen",
+          "novelty_episode_days": "Novelty Episode Days",
           "location": "Location",
           "stream_name": "Stream Name",
           "stream_url": "Stream URL",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Invalid host parameter",
       "rateLimit": "Too many notification stream connection attempts, please wait before trying again"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Invalid request body",
+        "urlRequired": "Stream URL is required",
+        "invalidUrl": "Invalid URL format. Enter a full URL like rtsp://host:port/path",
+        "unsupportedScheme": "Unsupported URL scheme \"{scheme}\". Use rtsp, rtsps, http, https, rtmp, or udp",
+        "blockedDestination": "This destination is blocked for security reasons",
+        "connectionFailed": "Could not connect to the stream. Check that the URL is correct and the stream is accessible"
+      }
+    },
     "debug": {
       "notEnabled": "Debug mode not enabled"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Refresh",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "All passing",
+      "needsAttention": "Needs attention",
+      "failing": "Failing",
+      "allClear": "All clear",
+      "noData": "No recent data",
+      "none": "None"
+    },
+    "diagnostics": "Diagnostics",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Component",
       "errorLevel": "Level",
       "errorMessage": "Message"
+    },
+    "window": {
+      "label": "Evaluation window",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Last event",
+      "recentEvents": "Recent events",
+      "time": "Time",
+      "source": "Source",
+      "count": "Count",
+      "lifetime": "lifetime",
+      "sparklineLabel": "Activity sparkline"
     }
   }
 }

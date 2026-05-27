@@ -2992,6 +2992,7 @@
         "unknown": "unbekannt",
         "refresh": "Aktualisieren",
         "addStream": "Stream hinzufügen",
+        "testRequired": "Führen Sie einen erfolgreichen Streamtest durch, bevor Sie speichern",
         "deleteConfirm": "Diesen Stream entfernen?",
         "restartCount": "{count} Mal neu gestartet",
         "healthLoadError": "Laden des Stream-Status fehlgeschlagen",
@@ -3045,10 +3046,10 @@
           "failed": "Fehlgeschlagen",
           "unknown": "Unbekannt"
         },
-        "probe": {
+        "test": {
           "button": "Stream testen",
           "probing": "Teste...",
-          "result": "Prüfergebnis",
+          "result": "Testergebnis",
           "error": "Test fehlgeschlagen",
           "batCompatible": "Fledermaus-kompatibel",
           "batIncompatible": "Nicht fledermaus-kompatibel"
@@ -3936,6 +3937,8 @@
           "species_name": "Artname",
           "scientific_name": "Wissenschaftlicher Name",
           "confidence": "Konfidenz",
+          "days_since_last_seen": "Tage seit letzter Sichtung",
+          "novelty_episode_days": "Tage der Neuheitsepisode",
           "location": "Standort",
           "stream_name": "Stream-Name",
           "stream_url": "Stream-URL",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Ungültiger Host-Parameter",
       "rateLimit": "Zu viele Verbindungsversuche zum Benachrichtigungsstream, bitte warten Sie einen Moment"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Ungültiger Anfragekörper",
+        "urlRequired": "Stream-URL ist erforderlich",
+        "invalidUrl": "Ungültiges URL-Format. Geben Sie eine vollständige URL ein, z. B. rtsp://host:port/pfad",
+        "unsupportedScheme": "Nicht unterstütztes URL-Schema \"{scheme}\". Verwenden Sie rtsp, rtsps, http, https, rtmp oder udp",
+        "blockedDestination": "Dieses Ziel ist aus Sicherheitsgründen gesperrt",
+        "connectionFailed": "Verbindung zum Stream konnte nicht hergestellt werden. Überprüfen Sie, ob die URL korrekt ist und der Stream erreichbar ist"
+      }
+    },
     "debug": {
       "notEnabled": "Debug-Modus nicht aktiviert"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Aktualisieren",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "Alles in Ordnung",
+      "needsAttention": "Erfordert Aufmerksamkeit",
+      "failing": "Fehlerhaft",
+      "allClear": "Keine Probleme",
+      "noData": "Keine Daten",
+      "none": "Keine"
+    },
+    "diagnostics": "Diagnose",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Komponente",
       "errorLevel": "Stufe",
       "errorMessage": "Nachricht"
+    },
+    "window": {
+      "label": "Auswertungszeitraum",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Letztes Ereignis",
+      "recentEvents": "Letzte Ereignisse",
+      "time": "Zeit",
+      "source": "Quelle",
+      "count": "Anzahl",
+      "lifetime": "gesamt",
+      "sparklineLabel": "Aktivitäts-Sparkline"
     }
   }
 }

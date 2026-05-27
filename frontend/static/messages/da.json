@@ -2992,6 +2992,7 @@
         "unknown": "ukendt",
         "refresh": "Opdater",
         "addStream": "Tilføj strøm",
+        "testRequired": "Kør en vellykket streamtest før du gemmer",
         "deleteConfirm": "Fjern denne strøm?",
         "restartCount": "Genstartet {count} gang(e)",
         "healthLoadError": "Kunne ikke indlæse strømmens sundhedsstatus",
@@ -3045,10 +3046,10 @@
           "failed": "Fejlet",
           "unknown": "Ukendt"
         },
-        "probe": {
+        "test": {
           "button": "Test stream",
           "probing": "Tester...",
-          "result": "Undersøgelsesresultat",
+          "result": "Testresultat",
           "error": "Test mislykkedes",
           "batCompatible": "Kompatibel med flagermus",
           "batIncompatible": "Ikke kompatibel med flagermus"
@@ -3936,6 +3937,8 @@
           "species_name": "Artsnavn",
           "scientific_name": "Videnskabeligt navn",
           "confidence": "Tillid",
+          "days_since_last_seen": "Dage siden sidst set",
+          "novelty_episode_days": "Dage i nyhedsepisode",
           "location": "Placering",
           "stream_name": "Strømnavn",
           "stream_url": "Strøm-URL",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Ugyldig host-parameter",
       "rateLimit": "For mange forsøg på at oprette notifikationsstrøm, vent venligst før du prøver igen"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Ugyldig forespørgselstekst",
+        "urlRequired": "Stream-URL er påkrævet",
+        "invalidUrl": "Ugyldigt URL-format. Indtast en fuld URL som rtsp://host:port/sti",
+        "unsupportedScheme": "Ikke-understøttet URL-skema \"{scheme}\". Brug rtsp, rtsps, http, https, rtmp eller udp",
+        "blockedDestination": "Denne destination er blokeret af sikkerhedsmæssige årsager",
+        "connectionFailed": "Kunne ikke oprette forbindelse til streamen. Kontrollér, at URL'en er korrekt, og at streamen er tilgængelig"
+      }
+    },
     "debug": {
       "notEnabled": "Fejlretningstilstand er ikke aktiveret"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Opdater",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "Alt OK",
+      "needsAttention": "Kræver opmærksomhed",
+      "failing": "Fejler",
+      "allClear": "Alt klart",
+      "noData": "Ingen data",
+      "none": "Ingen"
+    },
+    "diagnostics": "Diagnostik",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Komponent",
       "errorLevel": "Niveau",
       "errorMessage": "Besked"
+    },
+    "window": {
+      "label": "Evalueringsvindue",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Seneste hændelse",
+      "recentEvents": "Seneste hændelser",
+      "time": "Tid",
+      "source": "Kilde",
+      "count": "Antal",
+      "lifetime": "i alt",
+      "sparklineLabel": "Aktivitetsgraf"
     }
   }
 }

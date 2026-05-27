@@ -2992,6 +2992,7 @@
         "unknown": "neznámy",
         "refresh": "Obnoviť",
         "addStream": "Pridať stream",
+        "testRequired": "Pred uložením vykonajte úspešný test streamu",
         "deleteConfirm": "Odstrániť tento stream?",
         "restartCount": "Reštartované {count}-krát",
         "healthLoadError": "Nepodarilo sa načítať stav zdravia streamu",
@@ -3045,10 +3046,10 @@
           "failed": "Zlyhalo",
           "unknown": "Neznáme"
         },
-        "probe": {
+        "test": {
           "button": "Testovať stream",
           "probing": "Testovanie...",
-          "result": "Výsledok prieskumu",
+          "result": "Výsledok testu",
           "error": "Test zlyhal",
           "batCompatible": "Kompatibilný s netopiermi",
           "batIncompatible": "Nekompatibilný s netopiermi"
@@ -3936,6 +3937,8 @@
           "species_name": "Názov druhu",
           "scientific_name": "Vedecký názov",
           "confidence": "Spoľahlivosť",
+          "days_since_last_seen": "Dni od posledného pozorovania",
+          "novelty_episode_days": "Dni epizódy novosti",
           "location": "Poloha",
           "stream_name": "Názov streamu",
           "stream_url": "URL streamu",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Neplatný parameter hostiteľa",
       "rateLimit": "Príliš veľa pokusov o pripojenie k prúdu oznámení, počkajte chvíľu pred ďalším pokusom"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Neplatné telo požiadavky",
+        "urlRequired": "URL streamu je povinné",
+        "invalidUrl": "Neplatný formát URL. Zadajte úplnú URL, napr. rtsp://host:port/cesta",
+        "unsupportedScheme": "Nepodporovaná schéma URL \"{scheme}\". Použite rtsp, rtsps, http, https, rtmp alebo udp",
+        "blockedDestination": "Tento cieľ je z bezpečnostných dôvodov zablokovaný",
+        "connectionFailed": "Nepodarilo sa pripojiť k streamu. Skontrolujte, či je URL správna a stream je dostupný"
+      }
+    },
     "debug": {
       "notEnabled": "Režim ladenia nie je povolený"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Obnoviť",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "Všetko v poriadku",
+      "needsAttention": "Vyžaduje pozornosť",
+      "failing": "Zlyháva",
+      "allClear": "Bez problémov",
+      "noData": "Žiadne dáta",
+      "none": "Žiadne"
+    },
+    "diagnostics": "Diagnostika",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Komponent",
       "errorLevel": "Úroveň",
       "errorMessage": "Správa"
+    },
+    "window": {
+      "label": "Časové okno vyhodnotenia",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Posledná udalosť",
+      "recentEvents": "Nedávne udalosti",
+      "time": "Čas",
+      "source": "Zdroj",
+      "count": "Počet",
+      "lifetime": "celkom",
+      "sparklineLabel": "Graf aktivity"
     }
   }
 }

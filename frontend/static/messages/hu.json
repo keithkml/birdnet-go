@@ -2992,6 +2992,7 @@
         "unknown": "ismeretlen",
         "refresh": "Frissítés",
         "addStream": "Stream hozzáadása",
+        "testRequired": "Futtasson sikeres streamtesztet a mentés előtt",
         "deleteConfirm": "Eltávolítja ezt a streamet?",
         "restartCount": "{count} alkalommal újraindítva",
         "healthLoadError": "A stream egészségi állapot betöltése sikertelen",
@@ -3045,10 +3046,10 @@
           "failed": "Sikertelen",
           "unknown": "Ismeretlen"
         },
-        "probe": {
+        "test": {
           "button": "Stream tesztelése",
           "probing": "Tesztelés...",
-          "result": "Vizsgálat eredménye",
+          "result": "Teszt eredménye",
           "error": "Teszt sikertelen",
           "batCompatible": "Denevér-kompatibilis",
           "batIncompatible": "Nem denevér-kompatibilis"
@@ -3936,6 +3937,8 @@
           "species_name": "Faj neve",
           "scientific_name": "Tudományos név",
           "confidence": "Megbízhatóság",
+          "days_since_last_seen": "Napok az utolsó észlelés óta",
+          "novelty_episode_days": "Újdonsági epizód napjai",
           "location": "Helyszín",
           "stream_name": "Stream neve",
           "stream_url": "Adatfolyam URL",
@@ -4462,6 +4465,16 @@
       "invalidHost": "Érvénytelen host paraméter",
       "rateLimit": "Túl sok értesítési stream csatlakozási kísérlet, kérjük, várjon, mielőtt újra próbálkozik"
     },
+    "streams": {
+      "test": {
+        "invalidBody": "Érvénytelen kéréstörzs",
+        "urlRequired": "A stream URL megadása kötelező",
+        "invalidUrl": "Érvénytelen URL-formátum. Adjon meg egy teljes URL-t, pl. rtsp://host:port/útvonal",
+        "unsupportedScheme": "Nem támogatott URL-séma: \"{scheme}\". Használjon rtsp, rtsps, http, https, rtmp vagy udp sémát",
+        "blockedDestination": "Ez a cél biztonsági okokból le van tiltva",
+        "connectionFailed": "Nem sikerült csatlakozni a streamhez. Ellenőrizze, hogy az URL helyes-e és a stream elérhető-e"
+      }
+    },
     "debug": {
       "notEnabled": "A debug mód nincs engedélyezve"
     },
@@ -4819,11 +4832,9 @@
   },
   "health": {
     "title": "System Health",
-    "subtitle": "Run diagnostics to check your system's health and identify potential issues",
-    "runDiagnostics": "Run Diagnostics",
     "running": "Running diagnostics...",
     "lastRun": "Last run",
-    "noResults": "No diagnostics have been run yet. Click 'Run Diagnostics' to check your system.",
+    "refresh": "Frissítés",
     "exportText": "Copy Report",
     "exportJSON": "Download JSON",
     "copied": "Report copied to clipboard",
@@ -4835,6 +4846,15 @@
       "skipped": "Skipped",
       "total": "Total checks"
     },
+    "metricFooter": {
+      "allPassing": "Minden rendben",
+      "needsAttention": "Figyelmet igényel",
+      "failing": "Sikertelen",
+      "allClear": "Nincs probléma",
+      "noData": "Nincs adat",
+      "none": "Nincs"
+    },
+    "diagnostics": "Diagnosztika",
     "categories": {
       "system": "System",
       "audio": "Audio Pipeline",
@@ -4870,6 +4890,24 @@
       "errorComponent": "Komponens",
       "errorLevel": "Szint",
       "errorMessage": "Üzenet"
+    },
+    "window": {
+      "label": "Kiértékelési időablak",
+      "15m": "15m",
+      "30m": "30m",
+      "1h": "1h",
+      "6h": "6h",
+      "24h": "24h",
+      "7d": "7d"
+    },
+    "detail": {
+      "lastEvent": "Utolsó esemény",
+      "recentEvents": "Legutóbbi események",
+      "time": "Idő",
+      "source": "Forrás",
+      "count": "Darab",
+      "lifetime": "összesen",
+      "sparklineLabel": "Aktivitási diagram"
     }
   }
 }
