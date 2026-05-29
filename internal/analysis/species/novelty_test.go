@@ -37,6 +37,7 @@ func TestCheckAndUpdateSpeciesWithNovelty_FirstEverEpisode(t *testing.T) {
 	assert.True(t, novelty.NoveltyEpisodeActive)
 	assert.Equal(t, inactiveNoveltyValue, novelty.DaysSinceLastSeen)
 	assert.Equal(t, firstEverNoveltyEpisodeDays, novelty.NoveltyEpisodeDays)
+	assert.Equal(t, noveltyReasonFirstEver, novelty.NoveltyReason)
 	assert.Equal(t, detectionTime, novelty.NoveltyEpisodeStart)
 }
 
@@ -54,6 +55,7 @@ func TestCheckAndUpdateSpeciesWithNovelty_ReturnAfterAbsenceEpisode(t *testing.T
 	assert.True(t, novelty.NoveltyEpisodeActive)
 	assert.Equal(t, 12, novelty.DaysSinceLastSeen)
 	assert.Equal(t, 12, novelty.NoveltyEpisodeDays)
+	assert.Equal(t, noveltyReasonReturn, novelty.NoveltyReason)
 	assert.Equal(t, returnTime, novelty.NoveltyEpisodeStart)
 }
 

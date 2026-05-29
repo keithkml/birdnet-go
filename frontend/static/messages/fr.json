@@ -3959,6 +3959,7 @@
           "confidence": "Confiance",
           "days_since_last_seen": "Jours depuis la dernière détection",
           "novelty_episode_days": "Jours de l'épisode de nouveauté",
+          "novelty_reason": "Raison de la nouveauté",
           "location": "Emplacement",
           "stream_name": "Nom du flux",
           "stream_url": "URL du flux",

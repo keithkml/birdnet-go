@@ -86,6 +86,7 @@ func TestBridge_DetectionMetadataPromotedForConditions(t *testing.T) {
 	event.GetMetadata()[PropertyDaysSinceLastSeen] = 12
 	event.GetMetadata()[PropertyNoveltyEpisodeDays] = 12
 	event.GetMetadata()[PropertyNoveltyEpisodeStart] = noveltyEpisodeStart
+	event.GetMetadata()[PropertyNoveltyReason] = "return_after_absence"
 
 	require.NoError(t, bridge.ProcessDetectionEvent(event))
 
@@ -94,6 +95,7 @@ func TestBridge_DetectionMetadataPromotedForConditions(t *testing.T) {
 	assert.Equal(t, 12, result[0].Properties[PropertyDaysSinceLastSeen])
 	assert.Equal(t, 12, result[0].Properties[PropertyNoveltyEpisodeDays])
 	assert.Equal(t, noveltyEpisodeStart, result[0].Properties[PropertyNoveltyEpisodeStart])
+	assert.Equal(t, "return_after_absence", result[0].Properties[PropertyNoveltyReason])
 }
 
 func TestBridge_NewSpecies_EmitsBothEvents(t *testing.T) {

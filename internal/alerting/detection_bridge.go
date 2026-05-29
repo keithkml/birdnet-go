@@ -11,6 +11,7 @@ var detectionMetadataProperties = []string{
 	PropertyDaysSinceLastSeen,
 	PropertyNoveltyEpisodeDays,
 	PropertyNoveltyEpisodeStart,
+	PropertyNoveltyReason,
 }
 
 // DetectionAlertBridge bridges the events.EventBus detection events to the

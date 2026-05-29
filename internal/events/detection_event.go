@@ -13,6 +13,7 @@ const (
 	DetectionMetadataDaysSinceLastSeen   = "days_since_last_seen"
 	DetectionMetadataNoveltyEpisodeDays  = "novelty_episode_days"
 	DetectionMetadataNoveltyEpisodeStart = "novelty_episode_start"
+	DetectionMetadataNoveltyReason       = "novelty_reason"
 )
 
 // DetectionEvent represents a bird detection event that can be processed asynchronously

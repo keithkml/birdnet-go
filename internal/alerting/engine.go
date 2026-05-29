@@ -139,7 +139,7 @@ func detectionSpeciesKey(event *AlertEvent) string {
 
 func isNoveltyProperty(property string) bool {
 	switch property {
-	case PropertyDaysSinceLastSeen, PropertyNoveltyEpisodeDays, PropertyNoveltyEpisodeStart:
+	case PropertyDaysSinceLastSeen, PropertyNoveltyEpisodeDays, PropertyNoveltyEpisodeStart, PropertyNoveltyReason:
 		return true
 	default:
 		return false

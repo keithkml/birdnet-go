@@ -60,6 +60,8 @@ const (
 	// Novelty episode tracking
 	firstEverNoveltyEpisodeDays = 36500 // Treat first-ever detections as a very large absence (~100 years)
 	inactiveNoveltyValue        = -1    // Sentinel used when no novelty episode is active
+	noveltyReasonFirstEver      = "first_ever"
+	noveltyReasonReturn         = "return_after_absence"
 
 	// Cache management
 	maxStatusCacheSize           = 1000 // Maximum number of species to cache
@@ -123,6 +125,7 @@ type NoveltyStatus struct {
 	DaysSinceLastSeen    int
 	NoveltyEpisodeDays   int
 	NoveltyEpisodeStart  time.Time
+	NoveltyReason        string
 	NoveltyEpisodeActive bool
 }
 

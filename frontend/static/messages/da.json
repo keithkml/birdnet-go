@@ -3959,6 +3959,7 @@
           "confidence": "Tillid",
           "days_since_last_seen": "Dage siden sidst set",
           "novelty_episode_days": "Dage i nyhedsepisode",
+          "novelty_reason": "Årsag til nyhed",
           "location": "Placering",
           "stream_name": "Strømnavn",
           "stream_url": "Strøm-URL",

@@ -260,6 +260,7 @@ func (a *DatabaseAction) populateEventMetadata(detectionEvent events.DetectionEv
 		}
 		if novelty.NoveltyEpisodeActive {
 			metadata[events.DetectionMetadataNoveltyEpisodeDays] = novelty.NoveltyEpisodeDays
+			metadata[events.DetectionMetadataNoveltyReason] = novelty.NoveltyReason
 			if !novelty.NoveltyEpisodeStart.IsZero() {
 				metadata[events.DetectionMetadataNoveltyEpisodeStart] = novelty.NoveltyEpisodeStart.Format(time.RFC3339)
 			}
