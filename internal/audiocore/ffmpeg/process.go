@@ -24,6 +24,36 @@ import (
 // ffmpegTimeoutParam is the FFmpeg flag name for the connection timeout parameter.
 const ffmpegTimeoutParam = "-timeout"
 
+// ffmpegRTSPTimeoutParam is the RTSP-specific stream timeout flag.
+// FFmpeg ignores -timeout for the RTSP protocol; -stimeout must be used instead.
+const ffmpegRTSPTimeoutParam = "-stimeout"
+
+// timeoutParamForSource returns the correct FFmpeg timeout flag for the given source type.
+func timeoutParamForSource(st audiocore.SourceType) string {
+	if st == audiocore.SourceTypeRTSP {
+		return ffmpegRTSPTimeoutParam
+	}
+	return ffmpegTimeoutParam
+}
+
+// stripTimeoutParams returns a copy of params with any -timeout/-stimeout key-value pairs removed.
+func stripTimeoutParams(params []string) []string {
+	out := make([]string, 0, len(params))
+	skipNext := false
+	for _, param := range params {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		if param == ffmpegTimeoutParam || param == ffmpegRTSPTimeoutParam {
+			skipNext = true
+			continue
+		}
+		out = append(out, param)
+	}
+	return out
+}
+
 // AudioFilters defines optional processing filters for clip extraction and preview.
 type AudioFilters struct {
 	// Denoise preset name: "", "light", "medium", or "heavy".
@@ -377,18 +407,35 @@ func BuildFFmpegArgs(cfg *StreamConfig, ffmpegParameters []string) []string {
 		"-vn",
 		"-f", format,
 		"-ar", sampleRate,
-		"-ac", numChannels,
-		"-hide_banner",
-		"pipe:1",
 	)
+	args = appendChannelArgs(args, cfg.ChannelMode, cfg.SourceChannels, numChannels)
+	args = append(args, "-hide_banner", "pipe:1")
 
 	return args
 }
 
+// appendChannelArgs appends the appropriate FFmpeg channel selection flags.
+// When channelMode is "left" or "right" and the source has >1 channel,
+// it uses a pan filter to extract the selected channel. Falls back to
+// simple -ac downmix when the source is mono or mode is "downmix"/empty.
+func appendChannelArgs(args []string, channelMode string, sourceChannels int, numChannels string) []string {
+	if sourceChannels > 1 {
+		switch strings.ToLower(channelMode) {
+		case "left":
+			return append(args, "-af", "pan=mono|c0=c0", "-ac", "1")
+		case "right":
+			return append(args, "-af", "pan=mono|c0=c1", "-ac", "1")
+		}
+	}
+	return append(args, "-ac", numChannels)
+}
+
 // buildInputArgs constructs the pre-input FFmpeg flags (transport, timeout, extra parameters).
 // This mirrors the logic in Stream.buildFFmpegInputArgs but accepts explicit parameters.
+// RTSP streams use -stimeout (FFmpeg ignores -timeout for the RTSP protocol).
 func buildInputArgs(cfg *StreamConfig, ffmpegParameters []string) []string {
 	args := make([]string, 0, 8+len(ffmpegParameters))
+	timeoutFlag := timeoutParamForSource(cfg.sourceType())
 
 	if cfg.sourceType() == audiocore.SourceTypeRTSP {
 		args = append(args, "-rtsp_transport", cfg.Transport)
@@ -397,33 +444,19 @@ func buildInputArgs(cfg *StreamConfig, ffmpegParameters []string) []string {
 	hasUserTimeout, userTimeoutValue := detectUserTimeout(ffmpegParameters)
 
 	if !hasUserTimeout {
-		args = append(args, ffmpegTimeoutParam, strconv.FormatInt(defaultTimeoutMicroseconds, 10))
-	}
-
-	if len(ffmpegParameters) > 0 {
-		if hasUserTimeout {
-			if err := validateTimeout(userTimeoutValue); err != nil {
-				// Invalid user timeout: fall back to default and strip the bad -timeout pair.
-				args = append(args, ffmpegTimeoutParam, strconv.FormatInt(defaultTimeoutMicroseconds, 10))
-				skipNext := false
-				for _, param := range ffmpegParameters {
-					if skipNext {
-						skipNext = false
-						continue
-					}
-					if param == ffmpegTimeoutParam {
-						skipNext = true
-						continue
-					}
-					args = append(args, param)
-				}
-			} else {
-				args = append(args, ffmpegParameters...)
-			}
-		} else {
+		args = append(args, timeoutFlag, strconv.FormatInt(defaultTimeoutMicroseconds, 10))
+		if len(ffmpegParameters) > 0 {
 			args = append(args, ffmpegParameters...)
 		}
+		return args
 	}
+
+	if err := validateTimeout(userTimeoutValue); err != nil {
+		args = append(args, timeoutFlag, strconv.FormatInt(defaultTimeoutMicroseconds, 10))
+	} else {
+		args = append(args, timeoutFlag, userTimeoutValue)
+	}
+	args = append(args, stripTimeoutParams(ffmpegParameters)...)
 
 	return args
 }
